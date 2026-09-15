@@ -59,7 +59,8 @@ const activoSchema = new mongoose.Schema(
         }
     },
     {
-        timestamps: true
+        timestamps: true,
+        collection: "activos"
     }
 );
 

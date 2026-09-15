@@ -28,7 +28,8 @@ const almacenSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: "almacenes"
   }
 );
 

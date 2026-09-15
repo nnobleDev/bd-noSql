@@ -20,7 +20,8 @@ const sedeSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    collection: "sedes"
   }
 );
 
