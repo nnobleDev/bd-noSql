@@ -1,0 +1,11 @@
+const PRODUCT_TYPES = [
+  "computadora",
+  "notebook",
+  "impresora",
+  "scanner",
+  "otro"
+];
+
+module.exports = PRODUCT_TYPES;
+
+//DEFINIMOS ESTE ENUM PARA PODER USARLO EN EL MODELO DE PRODUCTO, YA QUE SI LO DEFINIMOS DENTRO DEL MODELO, NO PODEMOS USARLO EN OTROS LADOS.
