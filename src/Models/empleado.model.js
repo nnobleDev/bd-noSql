@@ -13,7 +13,9 @@ const empleadoSchema = new mongoose.Schema(
     },
 
     email: {
-      type: String
+      type: String,
+      unique: true,
+      required: true
     },
 
     sector: {
