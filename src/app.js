@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //Rutas
 app.use('/api/sede', require('./routes/sede.routes'));
-
+app.use('/api/producto', require('./routes/producto.routes'));
 
 
 app.listen(process.env.SERVER_PORT, () => {

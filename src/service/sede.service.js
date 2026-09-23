@@ -67,7 +67,7 @@ const actualizarSede = async (id, data) => {
 //ACA USAMOS AGGREGATE PARA OBTENER LOS ACTIVOS DE UNA SEDE CON LOOKUP, 
 // PERO NO FUNCIONA, PORQUE EL CAMPO SEDE EN ACTIVO ES UN OBJECTID Y NO UN STRING, 
 // ASI QUE NO PUEDE HACER MATCH. HAY QUE CONVERTIR EL OBJECTID A STRING O USAR $toObjectId EN LA PIPELINE DE AGGREGATE.
-async function obtenerActivosDeSede(sedeId) {
+const obtenerActivosDeSede = async (sedeId) =>{
     try {
         const resultado = await Sede.aggregate([
             {
