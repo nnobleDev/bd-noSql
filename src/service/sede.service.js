@@ -24,7 +24,7 @@ const obtenerSedes = async (filtros) => {
         let sedes; 
         if(filtros && Object.keys(filtros).length > 0) {
             // Aplicar filtros a la consulta
-            const query = {};
+            let query = {};
             if (filtros.nombre) {
                 query.nombre = { $regex: filtros.nombre, $options: "i" }; // Búsqueda insensible a mayúsculas/minúsculas
             }
