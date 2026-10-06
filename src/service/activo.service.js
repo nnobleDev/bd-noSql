@@ -16,6 +16,9 @@ disponible     → normalmente no tiene empleado
 const Activo = require('../Models/activo.model')
 const productoService = require('./producto.service');
 const sedeService = require('./sede.service');
+const empleadoService = require('./empleado.service');
+const movimientoService = require('./movimiento.service');
+const mongoose = require("mongoose");
 
 const crearActivo = async (data) => {
     try {
@@ -163,9 +166,66 @@ const obtenerActivoPorNroInventario = async (nroInventario) => {
     }
 }
 
-async function actualizarActivo(id, data) { }
+const actualizarActivo = async (id, data) => {
 
-async function asignarActivo(activoId, empleadoId) { }
+    try {
+        const activoActualizado = await Activo.findByIdAndUpdate(id, data, { new: true });
+        if (!activoActualizado) {
+            throw new Error("Activo no encontrado");
+        }
+        return activoActualizado;
+    } catch (error) {
+        throw new Error("Error al actualizar activo: " + error.message);
+    }
+}
+
+const asignarActivo = async (activoId, empleadoId) => {
+
+    //Iniciamos una sesion de mongoose para manejar la asignacion como una transaccion dem mongoDb y asi actualizar el activo y crear el movimiento correspondiente.
+    //De esta forma si alguna de las operaciones no se concreta, la otra tampoco impacta. O se impactan las dos operacions o ninguna
+    const session = await mongoose.startSession();
+    //Validamos que existe el activo y el empleado
+    try {
+        let activoActualizado;
+
+        await session.withTransaction(async () => {
+            const empleado = await empleadoService.obtenerEmpleadoPorId(empleadoId, session);
+            if (!empleado) {
+                throw new Error("Empleado no encontrado");
+            }
+
+            const activo = await Activo.findById(activoId).session(session);
+            if (!activo) {
+                throw new Error("Activo no encontrado");
+            }
+            //Validamos que el activo este disponible
+            if (activo.estado !== "disponible") {
+                throw new Error(`No se puede asignar un activo en estado ${activo.estado}`);
+            }
+
+            activo.usuarioAsignado = empleado._id;
+            activo.estado = "asignado";
+
+            activoActualizado = await activo.save({ session }); //Hacemos el save con session para usar la transaccion
+
+            //Creamos el movimiento de asignacion
+
+            await movimientoService.crearMovimiento({
+                activo: activo._id,
+                tipo: "asignacion",
+                empleado: empleado._id,
+                observaciones: `Activo asignado al empleado: ${empleado.nombre} ${empleado.apellido}`
+            }, session)
+
+        });
+        return activoActualizado;
+
+    } catch (error) {
+        throw new Error("Error al asignar el activo: " + error.message);
+    } finally {
+        await session.endSession(); //cerramos la sesion 
+    }
+}
 
 async function desasignarActivo(activoId) { }
 
@@ -174,3 +234,16 @@ async function trasladarActivo(activoId, destino) { }
 async function enviarAMantenimiento(activoId) { }
 
 async function darDeBajaActivo(activoId) { }
+
+module.exports = {
+    crearActivo,
+    obtenerActivos,
+    obtenerActivoPorId,
+    obtenerActivoPorNroInventario,
+    actualizarActivo,
+    asignarActivo,
+    desasignarActivo,
+    trasladarActivo,
+    enviarAMantenimiento,
+    darDeBajaActivo
+}
