@@ -31,7 +31,7 @@ sedeController.crearSede = async (req, res) => {
         const nuevaSede = await sedeService.crearSede(req.body);
         res.status(201).json(nuevaSede);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -54,9 +54,9 @@ sedeController.obtenerSedePorId = async (req, res) => {
 // Si la actualización es exitosa, devuelve un estado 200 con la sede actualizada en formato JSON; si no se encuentra la sede, devuelve un estado 404 con un mensaje de error; si hay un error en la actualización, devuelve un estado 500 con un mensaje de error.
 sedeController.actualizarSede = async (req, res) => {
     try {
-        const sedeActualizada = await sedeService.actualizarSede(req.params.id, req.body);  
+        const sedeActualizada = await sedeService.actualizarSede(req.params.id, req.body);
         res.status(200).json(sedeActualizada);
-    }   catch (error) {
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
@@ -67,7 +67,7 @@ sedeController.actualizarSede = async (req, res) => {
 sedeController.obtenerActivosPorSede = async (req, res) => {
     try {
         const sedeId = req.params.id;
-        const activos= await sedeService.obtenerActivosPorSede(req.params.id);
+        const activos = await sedeService.obtenerActivosPorSede(req.params.id);
         res.status(200).json(activos);
     } catch (error) {
         res.status(500).json({ message: error.message });

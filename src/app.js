@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 //Rutas
 app.use('/api/sede', require('./routes/sede.routes'));
 app.use('/api/producto', require('./routes/producto.routes'));
-
+app.use('/api/activos', require('./routes/activo.routes'))
 
 app.listen(process.env.SERVER_PORT, () => {
   console.log(`Servidor levantado en:  http://localhost:${process.env.SERVER_PORT}`);
