@@ -1,4 +1,3 @@
-const Sede = require('../Models/sede.model');
 const sedeService = require('../service/sede.service');
 
 const sedeController = {};// Definimos un objeto sedeController que contendrá los métodos para manejar las solicitudes HTTP relacionadas con las sedes.

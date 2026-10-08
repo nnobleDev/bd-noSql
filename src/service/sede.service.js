@@ -41,9 +41,9 @@ const obtenerSedes = async (filtros) => {
     }
 }
 
-const obtenerSedePorId = async (id) => {
+const obtenerSedePorId = async (id, session = null) => {
     try {
-        const sede = await Sede.findById(id);
+        const sede = await Sede.findById(id).session(session);
         return sede;
     } catch (error) {
         throw new Error("Error al obtener la sede por ID: " + error.message);

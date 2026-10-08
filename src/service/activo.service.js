@@ -18,6 +18,8 @@ const productoService = require('./producto.service');
 const sedeService = require('./sede.service');
 const empleadoService = require('./empleado.service');
 const movimientoService = require('./movimiento.service');
+const sectorService = require('./sector.service');
+const almacenService = require('./almace.service');
 const mongoose = require("mongoose");
 
 const crearActivo = async (data) => {
@@ -194,6 +196,11 @@ const asignarActivo = async (activoId, empleadoId) => {
                 throw new Error("Empleado no encontrado");
             }
 
+            const sectorEmpleado = await sectorService.obtenerSectorPorId(empleado.sector, session);
+            if (!sectorEmpleado) {
+                throw new Error("No existe el sector del empleado");
+            }
+
             const activo = await Activo.findById(activoId).session(session);
             if (!activo) {
                 throw new Error("Activo no encontrado");
@@ -201,6 +208,10 @@ const asignarActivo = async (activoId, empleadoId) => {
             //Validamos que el activo este disponible
             if (activo.estado !== "disponible") {
                 throw new Error(`No se puede asignar un activo en estado ${activo.estado}`);
+            }
+
+            if (activo.sede.toString() !== sectorEmpleado.sede.toString()) {
+                throw new Error("El activo no esta en la misma sede que el empleado, trasladar antes de asignar.")
             }
 
             activo.usuarioAsignado = empleado._id;
@@ -227,13 +238,207 @@ const asignarActivo = async (activoId, empleadoId) => {
     }
 }
 
-async function desasignarActivo(activoId) { }
+const desasignarActivo = async (activoId) => {
+    const session = await mongoose.startSession();
+    let activoActualizado;
+    try {
+        await session.withTransaction(async () => {
+            const activoBuscado = await Activo.findById(activoId).session(session)
+            if (!activoBuscado) {
+                throw new Error("El activo no existe");
+            }
 
-async function trasladarActivo(activoId, destino) { }
+            if (activoBuscado.estado !== "asignado") {
+                throw new Error("El activo no se encuentra asignado");
+            }
 
-async function enviarAMantenimiento(activoId) { }
+            const empleado = await empleadoService.obtenerEmpleadoPorId(activoBuscado.usuarioAsignado, session);
 
-async function darDeBajaActivo(activoId) { }
+            if (!empleado) {
+                throw new Error("El empleado asignado no existe");
+            }
+
+
+            activoBuscado.estado = "disponible";
+            activoActualizado = await activoBuscado.save({ session });
+
+
+
+            await movimientoService.crearMovimiento({
+                activo: activoBuscado._id,
+                tipo: "desasignacion",
+                empleado: null,
+                observaciones: `Activo desasginado del empleado: ${empleado.nombre} ${empleado.apellido}`
+            }, session);
+        });
+        return activoActualizado;
+
+    } catch (error) {
+        throw new Error("Error al desasignar el activo");
+    } finally {
+        await session.endSession();
+    }
+}
+
+const trasladarActivo = async (activoId, destino) => {
+    const session = await mongoose.startSession();
+    let activoTrasladado;
+    try {
+        await session.withTransaction(async () => {
+
+            let almacen;
+            let sector;
+            let movimiento;
+            const { tipo, id } = destino;
+
+            const activoBuscado = await Activo.findById(activoId).session(session);
+
+            if (!activoBuscado) {
+                throw new Error("No existe el activo");
+            }
+
+            if (tipo !== "almacen" && tipo !== "sector") {
+                throw new Error("Tipo de destino inválido");
+            }
+
+            if (tipo == "almacen") {
+                almacen = await almacenService.obtenerAlmacenPorId(id, session)
+
+                if (!almacen) {
+                    throw new Error("No existe el almacen destino");
+                }
+
+                let sedeAlmacen = await sedeService.obtenerSedePorId(almacen.sede, session);
+                if (!sedeAlmacen) {
+                    throw new Error("No existe la sede del almacen");
+                }
+
+                if (activoBuscado.almacen?.equals(almacen._id)) {
+                    throw new Error("El activo ya esta en la ubicacion");
+                }
+
+                movimiento = {
+                    activo: activoBuscado._id,
+                    tipo: "traslado",
+                    origen: { sede: activoBuscado.sede, sector: activoBuscado.sector, almacen: activoBuscado.almacen },
+                    destino: { sede: sedeAlmacen._id, sector: null, almacen: almacen._id },
+                    observaciones: `Activo ${activoBuscado._id} trasladado al destino`
+                }
+
+                activoBuscado.sede = sedeAlmacen._id;
+                activoBuscado.sector = null;
+                activoBuscado.almacen = almacen._id;
+
+            }
+
+            if (tipo == "sector") {
+                sector = await sectorService.obtenerSectorPorId(id, session);
+
+                if (!sector) {
+                    throw new Error("No existe el sector destino");
+                }
+
+                let sedeSector = await sedeService.obtenerSedePorId(sector.sede, session);
+                if (!sedeSector) {
+                    throw new Error("No existe la sede del sector");
+                }
+
+                if (activoBuscado.sector?.equals(sector._id)) {
+                    throw new Error("El activo ya esta en la ubicacion");
+                }
+
+                movimiento = {
+                    activo: activoBuscado._id,
+                    tipo: "traslado",
+                    origen: { sede: activoBuscado.sede, sector: activoBuscado.sector, almacen: activoBuscado.almacen },
+                    destino: { sede: sedeSector._id, sector: id, almacen: null },
+                    observaciones: `Activo ${activoBuscado._id} trasladado al destino`
+                }
+
+                activoBuscado.sector = sector._id;
+                activoBuscado.sede = sedeSector._id;
+                activoBuscado.almacen = null;
+            }
+
+            await movimientoService.crearMovimiento(movimiento, session);
+            activoTrasladado = await activoBuscado.save({ session });
+
+        });
+        return activoTrasladado;
+
+    } catch (error) {
+        throw new Error("Error al trasladar activo:" + error.message);
+    } finally {
+        await session.endSession();
+    }
+}
+
+const enviarAMantenimiento = async (activoId) => {
+    const session = await mongoose.startSession();
+    let activoEnMantenimiento;
+    try {
+        await session.withTransaction(async () => {
+
+            const activoBuscado = await Activo.findById(activoId).session(session);
+            if (!activoBuscado) {
+                throw new Error("No existe el activo buscado");
+            }
+            if (activoBuscado.estado === "mantenimiento") {
+                throw new Error("El activo ya esta en baja");
+            }
+
+            activoBuscado.estado = "mantenimiento";
+            activoEnMantenimiento = activoBuscado.save({session})
+
+            await movimientoService.crearMovimiento({
+                activo: activoBuscado._id,
+                tipo: "mantenimiento",
+                origen: { sede: activoBuscado.sede, sector: activoBuscado.sector, almacen: activoBuscado.almacen },
+                observaciones: `El ativo ${activoId} fue enviado a mantenimiento`
+            }, session)
+        });
+        return activoEnMantenimiento;
+    } catch (error) {
+        throw new Error("Error al enviar activo a mantenimiento: " + error.message);
+    } finally {
+        await session.endSession()
+    }
+}
+
+const darDeBajaActivo = async (activoId) => {
+    const session = await mongoose.startSession();
+    let activoDeBaja;
+    try {
+        await session.withTransaction(async () => {
+
+            const activoBuscado = await Activo.findById(activoId).session(session);
+            if (!activoBuscado) {
+                throw new Error("No existe el activo buscado");
+            }
+            if (activoBuscado.estado === "baja") {
+                throw new Error("El activo ya esta dado de baja");
+            }
+
+            activoBuscado.estado = "baja";
+
+            activoDeBaja = await activoBuscado.save({ session });
+
+            await movimientoService.crearMovimiento({
+                activo: activoBuscado._id,
+                tipo: "baja",
+                origen: { sede: activoBuscado.sede, sector: activoBuscado.sector, almacen: activoBuscado.almacen },
+                observaciones: `El ativo ${activoId} fue dado de baja`
+            }, session);
+        });
+        return activoDeBaja;
+
+    } catch (error) {
+        throw new Error("Error al dar de baja el activo: " + error.message);
+    } finally {
+        await session.endSession();
+    }
+
+}
 
 module.exports = {
     crearActivo,
