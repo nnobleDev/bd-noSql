@@ -10,10 +10,17 @@ Buscar movimientos por tipo.
 Buscar movimientos por fecha.
 Consultar historial.
 */
-async function crearMovimiento(data) {}
+async function crearMovimiento(data, session = null) {}
 
 async function obtenerMovimientos(filtros) {}
 
 async function obtenerMovimientoPorId(id) {}
 
 async function obtenerMovimientosPorActivo(activoId) {}
+
+module.exports = {
+    crearMovimiento,
+    obtenerMovimientos,
+    obtenerMovimientoPorId,
+    obtenerMovimientosPorActivo
+}

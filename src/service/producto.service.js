@@ -30,9 +30,9 @@ const obtenerProductos = async () => {
 
 };
 
-const obtenerProductoPorId = async (id) =>{
+const obtenerProductoPorId = async (id, session = null) =>{
     try {
-        const producto = await Producto.findById(id);
+        const producto = await Producto.findById(id).session(session);
         if (!producto) {
             throw new Error("Producto no encontrado");
         }

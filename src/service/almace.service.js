@@ -2,10 +2,16 @@ async function crearAlmacen(data) {}
 
 async function obtenerAlmacenes(filtros) {}
 
-async function obtenerAlmacenPorId(id) {}
+async function obtenerAlmacenPorId(id, session = null) {}
 
 async function actualizarAlmacen(id, data) {}
 
-async function eliminarAlmacen(id) {}
-
 async function obtenerActivosDeAlmacen(almacenId) {}
+
+module.exports = {
+    crearAlmacen,
+    obtenerAlmacenes,
+    obtenerAlmacenPorId,
+    actualizarAlmacen,
+    obtenerActivosDeAlmacen
+}
