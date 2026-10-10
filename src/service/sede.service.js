@@ -1,5 +1,5 @@
 const Sede = require("../Models/sede.model");
-
+const mongoose = require("mongoose");
 const crearSede = (data) => {
     
     const { nombre, direccion, activa } = data;
