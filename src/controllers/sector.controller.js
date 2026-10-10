@@ -41,7 +41,7 @@ sectorController.obtenerSectorPorId = async (req, res) =>{
     try{
         const sector = await sectorService.obtenerSectorPorId(req.params.id);
         if(!sector){
-            res.status(404).json({
+            return res.status(404).json({
                 message: "No se econtro sector"
             })
         }
@@ -69,16 +69,16 @@ sectorController.actualizarSector = async (req, res) => {
 
 
 //Controller para obtener los sectores de una sede. Recibimos el id de la sede como parametro de url
-sectorController.obtenerSectoresPorSede = async (req, res) =>{
-    try{
+sectorController.obtenerSectoresPorSede = async (req, res) => {
+    try {
         const sectores = await sectorService.obtenerSectoresPorSede(req.params.sedeId);
-        if(sectores.length === 0){
-            res.status(404).json({
+        if (sectores.length === 0) {
+            return res.status(404).json({
                 message: "No se encontraron sectores"
             })
         }
         res.status(200).json(sectores);
-    } catch(error) {
+    } catch (error) {
         res.status(500).json({
             message: error.message
         })
