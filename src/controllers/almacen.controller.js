@@ -1,4 +1,4 @@
-const almacenService = require("../service/almace.service");
+const almacenService = require("../service/almacen.service");
 
 const almacenController = {};
 

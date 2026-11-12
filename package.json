@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.js",
-    "seed": "mongosh \"mongodb://localhost:27017\" src/util/seed.js"
+    "seed": "mongosh \"mongodb://localhost:27017\" src/util/seeds.js"
   },
   "keywords": [],
   "author": "",

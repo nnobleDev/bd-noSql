@@ -1,4 +1,6 @@
-const Almacen = require('../models/almacen.model');
+const Almacen = require('../Models/almacen.model');
+
+
 const mongoose = require("mongoose");
 
 const crearAlmacen = async (data) => {

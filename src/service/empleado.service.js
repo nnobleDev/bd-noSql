@@ -1,5 +1,5 @@
-const Empleado = require('../models/empleado.model');
-const Activo = require('../models/activo.model');
+const Empleado = require('../Models/empleado.model');
+const Activo = require('../Models/activo.model');
 const mongoose = require("mongoose");
 
 

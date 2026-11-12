@@ -19,7 +19,7 @@ const sedeService = require('./sede.service');
 const empleadoService = require('./empleado.service');
 const movimientoService = require('./movimiento.service');
 const sectorService = require('./sector.service');
-const almacenService = require('./almace.service');
+const almacenService = require('./almacen.service');
 const mongoose = require("mongoose");
 
 const crearActivo = async (data) => {
