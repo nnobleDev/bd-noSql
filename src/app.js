@@ -11,10 +11,12 @@ app.use(express.urlencoded({ extended: true }));
 
 //Rutas
 app.use('/api/sede', require('./routes/sede.routes'));
+app.use('/api/almacen', require('./routes/almacen.routes'));
 app.use('/api/producto', require('./routes/producto.routes'));
 app.use('/api/activos', require('./routes/activo.routes'));
 app.use('/api/sector', require('./routes/sector.routes'));
 app.use('/api/movimientos', require('./routes/movimiento.routes'));
+app.use('/api/empleado', require('./routes/empleado.routes'));
 
 app.listen(process.env.SERVER_PORT, () => {
   console.log(`Servidor levantado en:  http://localhost:${process.env.SERVER_PORT}`);
