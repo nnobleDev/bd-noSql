@@ -30,7 +30,12 @@ const movimientoSchema = new mongoose.Schema(
       sector: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Sector"
-      }
+      },
+
+      almacen: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Almacen"
+    }
     },
 
     destino: {
@@ -42,7 +47,12 @@ const movimientoSchema = new mongoose.Schema(
       sector: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Sector"
-      }
+      },
+
+      almacen: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Almacen"
+    }
     },
 
     empleado: {
